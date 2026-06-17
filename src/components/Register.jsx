@@ -8,7 +8,21 @@ const Register = () => {
         e.preventDefault();
         signInWithGoogle()
         .then(result => {
-            console.log(result)
+            console.log(result.user)
+            const newUser = {
+                name: result.user.displayName,
+                email: result.user.email,
+                image: result.user.photoURL
+
+            }
+
+            fetch("http://localhost:3000/users", {
+    method: "POST",
+    headers: {
+        "content-type": "application/json"
+    },
+    body: JSON.stringify(newUser)
+})
         })
         .catch(error => {
             console.log(error)
