@@ -1,5 +1,6 @@
 import React, { use } from "react";
 import { Authcontext } from "../context/AuthContext";
+import { Link } from "react-router";
 
 const Register = () => {
     const {signInWithGoogle} = use(Authcontext)
@@ -35,19 +36,29 @@ const Register = () => {
         <div className="hero-content w-full mx-auto">
           <div className="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
             <div className="card-body">
+              <h1 className="text-center font-bold text-2xl">Register Now</h1>
+              <p>Already have an account? <Link className="text-blue-800 hover:underline">Login Now</Link></p>
               <fieldset className="fieldset">
+                <label className="label">Name</label>
+                <input type="name" className="input" placeholder="Adam" />
+
                 <label className="label">Email</label>
-                <input type="email" className="input" placeholder="Email" />
+                <input type="email" className="input" placeholder="adam@gmail.com" />
+
+                <label className="label">Photo</label>
+                <input type="photo" className="input" placeholder="adam.png" />
+                
                 <label className="label">Password</label>
                 <input
                   type="password"
                   className="input"
-                  placeholder="Password"
+                  placeholder="******"
                 />
                 <div>
                   <a className="link link-hover">Forgot password?</a>
                 </div>
                 <button className="btn btn-neutral mt-4">Register</button>
+                <span className="text-center font-bold">OR</span>
                 {/* Google */}
                 <button onClick={handleGoogleSignIn} className="btn bg-white text-black border-[#e5e5e5]">
                   <svg

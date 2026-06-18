@@ -13,21 +13,22 @@ const Navbar = () => {
     const links = <>
     <li><Link to="/">Home</Link></li>
     <li><Link to="/allproducts">All Products</Link></li>
-    <li><Link to="/register">Register</Link></li>
+    <li><Link to="/aboutus">About US</Link></li>
 
     {
       user &&
       <>
       <li><Link to="myproducts">My Products</Link></li>
-    <li><Link to="/mybids">My Bids</Link></li>
+      <li><Link to="/mybids">My Bids</Link></li>
+      <li><Link to="/createproduct">Create Product</Link></li>
       </>
     }
                 
     </>
   return (
     
-    <div>
-      <div className="navbar bg-base-100 shadow-sm">
+    <div className=" bg-white shadow-sm">
+      <div className="navbar w-11/12 mx-auto">
         <div className="navbar-start">
           <div className="dropdown">
             <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">
@@ -54,19 +55,19 @@ const Navbar = () => {
               {links}
             </ul>
           </div>
-          <a className="font-bold text-2xl">Smart <span className="text-purple-500">Deals</span></a>
+          <a className="font-bold text-3xl">Smart<span className="text-purple-500">Deals</span></a>
         </div>
         <div className="navbar-center hidden lg:flex">
-          <ul className="menu menu-horizontal px-1">
+          <ul className="menu menu-horizontal px-1 font-semibold">
             {links}
           </ul>
         </div>
         <div className="navbar-end">
         {
         user ? 
-        <a onClick={handleSignOut} className="btn">Sign Out</a> 
+        <a onClick={handleSignOut} className="btn btn-primary">Sign Out</a> 
         : 
-        <Link to="register">Sign In</Link>
+        <Link className="btn btn-primary " to="register">Register</Link>
         }
           
         </div>
