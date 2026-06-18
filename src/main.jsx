@@ -12,6 +12,7 @@ import AuthProvider from './context/AuthProvider.jsx';
 import MyProducts from './components/MyProducts.jsx';
 import MyBids from './components/MyBids.jsx';
 import ProducDetails from './components/ProducDetails.jsx';
+import AboutUs from './components/AboutUs.jsx';
 
 
 const router = createBrowserRouter([
@@ -32,6 +33,10 @@ const router = createBrowserRouter([
       {
         path: "register",
         element: <Register></Register>
+      },
+      {
+        path: "aboutus",
+        element: <AboutUs></AboutUs>
       },
       {
         path:"myproducts",
