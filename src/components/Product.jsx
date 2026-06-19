@@ -4,6 +4,7 @@ import { Link } from "react-router";
 const Product = ({ product }) => {
   const {
     title,
+    _id,
     price_min,
     price_max,
     image,
@@ -49,7 +50,7 @@ const Product = ({ product }) => {
         </div>
 
         <div className="card-actions mt-4">
-          <Link to="/productdetails/${_id}" className="btn btn-primary w-full">
+          <Link to={`/productdetails/${_id}`} className="btn btn-primary w-full">
             View Details
           </Link>
         </div>
