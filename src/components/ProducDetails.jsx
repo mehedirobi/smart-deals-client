@@ -1,6 +1,7 @@
 import React, { use, useRef } from "react";
 import { useLoaderData } from "react-router";
 import { Authcontext } from "../context/AuthContext";
+import Swal from "sweetalert2";
 
 const ProducDetails = () => {
   const { user } = use(Authcontext);
@@ -36,7 +37,18 @@ const ProducDetails = () => {
       body: JSON.stringify(newBid)
     })
     .then(res => res.json())
-    .then(data => console.log('after place bids', data))
+    .then(data => {
+      if(data.insertedId){
+        bidModalRef.current.close()
+        Swal.fire({
+  position: "top-center",
+  icon: "success",
+  title: "Your Bid has been placed",
+  showConfirmButton: false,
+  timer: 1500
+});
+      }
+    })
 
     console.log(productId, name, email, bid);
   };
