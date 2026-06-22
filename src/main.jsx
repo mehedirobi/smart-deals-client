@@ -13,6 +13,7 @@ import MyProducts from './components/MyProducts.jsx';
 import MyBids from './components/MyBids.jsx';
 import ProducDetails from './components/ProducDetails.jsx';
 import AboutUs from './components/AboutUs.jsx';
+import CreateProduct from './components/CreateProduct.jsx';
 
 
 const router = createBrowserRouter([
@@ -41,6 +42,14 @@ const router = createBrowserRouter([
       {
         path:"myproducts",
         element: <MyProducts></MyProducts>
+      },
+      {
+        path:"createproduct",
+        element: <CreateProduct></CreateProduct>
+      },
+      {
+        path:"allproducts",
+        element: <AllProducts></AllProducts>
       },
       {
         path:"mybids",
