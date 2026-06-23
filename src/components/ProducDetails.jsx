@@ -166,7 +166,7 @@ const ProducDetails = () => {
                       </div>
                     </div>
                     <div>
-                      <div className="font-bold">Hart Hagerty</div>
+                      <div className="font-bold">{buyer_name}</div>
                       <div className="text-sm opacity-50">United States</div>
                     </div>
                   </div>
