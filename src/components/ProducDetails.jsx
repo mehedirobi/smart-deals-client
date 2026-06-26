@@ -1,93 +1,134 @@
-import React, { use, useEffect, useRef, useState } from "react";
+import React, { use, useEffect, useMemo, useRef, useState } from "react";
 import { useLoaderData } from "react-router";
 import { Authcontext } from "../context/AuthContext";
 import Swal from "sweetalert2";
 
 const ProducDetails = () => {
   const { user } = use(Authcontext);
+
   const [bids, setBids] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { _id: productId } = useLoaderData();
 
   const bidModalRef = useRef(null);
 
   const handleBidModal = () => {
-    bidModalRef.current.showModal();
+    bidModalRef.current?.showModal();
   };
 
+  // Fetch bids
   useEffect(() => {
-    fetch(`http://localhost:3000/products/bids/${productId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("bids for this product", data);
+    const fetchBids = async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:3000/products/bids/${productId}`
+        );
+
+        const data = await res.json();
+
         setBids(data);
-      });
+      } catch (error) {
+        console.error("Failed to fetch bids:", error);
+      }
+    };
+
+    fetchBids();
   }, [productId]);
 
-  const handleBitSubmit = (e) => {
+  // Highest bid first
+  const sortedBids = useMemo(() => {
+    return [...bids].sort(
+      (a, b) => Number(b.bid_price) - Number(a.bid_price)
+    );
+  }, [bids]);
+
+  const handleBidSubmit = async (e) => {
     e.preventDefault();
 
-    const name = e.target.name.value;
-    const email = e.target.email.value;
-    const bid = e.target.bid.value;
+    const form = e.target;
 
     const newBid = {
       product: productId,
-      buyer_name: name,
-      buyer_email: email,
-      bid_price: bid,
+      buyer_name: form.name.value,
+      buyer_email: form.email.value,
+      bid_price: Number(form.bid.value),
       status: "pending",
     };
 
-    fetch("http://localhost:3000/bids", {
-      method: "post",
-      headers: {
-        "content-type": "application/json",
-      },
-      body: JSON.stringify(newBid),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.insertedId) {
-          bidModalRef.current.close();
-          Swal.fire({
-            position: "top-center",
-            icon: "success",
-            title: "Your Bid has been placed",
-            showConfirmButton: false,
-            timer: 1500,
-          });
-        }
+    try {
+      setIsSubmitting(true);
+
+      const res = await fetch("http://localhost:3000/bids", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(newBid),
       });
 
-    console.log(productId, name, email, bid);
+      const data = await res.json();
+
+      if (data.insertedId) {
+        setBids((prevBids) => [
+          ...prevBids,
+          {
+            ...newBid,
+            _id: data.insertedId,
+          },
+        ]);
+
+        bidModalRef.current?.close();
+
+        Swal.fire({
+          position: "top-center",
+          icon: "success",
+          title: "Your bid has been placed",
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      }
+    } catch (error) {
+      console.error(error);
+
+      Swal.fire({
+        icon: "error",
+        title: "Failed to place bid",
+        text: "Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div>
+    <div className="space-y-8">
+      {/* Bid Button */}
       <div>
         <button onClick={handleBidModal} className="btn btn-primary">
           I want to buy this product
         </button>
 
+        {/* Modal */}
         <dialog
           ref={bidModalRef}
-          id="my_modal_5"
           className="modal modal-bottom sm:modal-middle"
         >
           <div className="modal-box">
-            <h3 className="font-bold text-lg">Give the best offrer!</h3>
+            <h3 className="font-bold text-lg">Give the Best Offer!</h3>
 
-            <p className="py-4">Offer something seller can not rassist</p>
+            <p className="py-4">
+              Offer something the seller cannot resist.
+            </p>
 
-            <form onSubmit={handleBitSubmit}>
+            <form onSubmit={handleBidSubmit}>
               <fieldset className="fieldset">
                 <label className="label">Name</label>
 
                 <input
                   type="text"
                   name="name"
-                  className="input"
+                  className="input w-full"
                   defaultValue={user?.displayName || ""}
                   readOnly
                 />
@@ -97,7 +138,7 @@ const ProducDetails = () => {
                 <input
                   type="email"
                   name="email"
-                  className="input"
+                  className="input w-full"
                   defaultValue={user?.email || ""}
                   readOnly
                 />
@@ -107,12 +148,19 @@ const ProducDetails = () => {
                 <input
                   type="number"
                   name="bid"
-                  className="input"
-                  placeholder="Enter Bid amount"
+                  className="input w-full"
+                  placeholder="Enter bid amount"
+                  min="1"
                   required
                 />
 
-                <button className="btn btn-primary my-2">Place your Bid</button>
+                <button
+                  type="submit"
+                  className="btn btn-primary mt-4"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Submitting..." : "Place Your Bid"}
+                </button>
               </fieldset>
             </form>
 
@@ -124,67 +172,58 @@ const ProducDetails = () => {
           </div>
         </dialog>
       </div>
-      {/* Bids for this product */}
+
+      {/* Bids Table */}
       <div>
-        <h1 className="text-3xl">
-          Bids for this product:{" "}
-          <span className="text-primary">{bids.length}</span>
+        <h1 className="text-3xl font-bold mb-5">
+          Bids for this Product:{" "}
+          <span className="text-primary">{sortedBids.length}</span>
         </h1>
 
         <div className="overflow-x-auto">
-          <table className="table">
-            {/* head */}
+          <table className="table table-zebra">
             <thead>
               <tr>
-                <th>
-                 <th>Sl No.</th>
-                </th>
+                <th>SL No.</th>
                 <th>Buyer Name</th>
                 <th>Buyer Email</th>
                 <th>Bid Price</th>
-                <th>Action</th>
+                <th>Status</th>
               </tr>
             </thead>
+
             <tbody>
-              {/* row 1 */}
-              <tr>
-                <th>
-                  {
-                    bids.map((bid, index) => <tr>
-                      <th>{index + 1}</th>
-                    </tr> )
-                  }
-                </th>
-                <td>
-                  <div className="flex items-center gap-3">
-                    <div className="avatar">
-                      <div className="mask mask-squircle h-12 w-12">
-                        <img
-                          src="https://img.daisyui.com/images/profile/demo/2@94.webp"
-                          alt="Avatar Tailwind CSS Component"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="font-bold">{buyer_name}</div>
-                      <div className="text-sm opacity-50">United States</div>
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  Zemlak, Daniel and Leannon
-                  <br />
-                  <span className="badge badge-ghost badge-sm">
-                    Desktop Support Technician
-                  </span>
-                </td>
-                <td>Purple</td>
-                <th>
-                  <button className="btn btn-ghost btn-xs">details</button>
-                </th>
-              </tr>
+              {sortedBids.length > 0 ? (
+                sortedBids.map((bid, index) => (
+                  <tr key={bid._id}>
+                    <td>{index + 1}</td>
+
+                    <td>{bid.buyer_name}</td>
+
+                    <td>{bid.buyer_email}</td>
+
+                    <td className="font-semibold">
+                      ${bid.bid_price}
+                    </td>
+
+                    <td>
+                      <span className="badge badge-warning">
+                        {bid.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan="5"
+                    className="text-center py-6 text-gray-500"
+                  >
+                    No bids found for this product.
+                  </td>
+                </tr>
+              )}
             </tbody>
-            
           </table>
         </div>
       </div>
