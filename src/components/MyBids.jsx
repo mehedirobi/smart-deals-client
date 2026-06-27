@@ -22,14 +22,16 @@ const MyBids = () => {
           `http://localhost:3000/bids?email=${user.email}`
         );
 
-        if (!res.ok) throw new Error("Failed to fetch bids");
+        if (!res.ok) {
+          throw new Error("Failed to fetch bids");
+        }
 
         const data = await res.json();
 
         setBids(data || []);
       } catch (err) {
         console.error(err);
-        setError("Failed to load bids");
+        setError("Failed to load your bids.");
       } finally {
         setLoading(false);
       }
@@ -38,33 +40,29 @@ const MyBids = () => {
     fetchMyBids();
   }, [user?.email]);
 
-  // DELETE BID (OPTIMISTIC UPDATE)
+  // DELETE BID
   const handleDeleteBids = async (_id) => {
     const result = await Swal.fire({
-      title: "Are you sure?",
-      text: "You won't be able to revert this!",
+      title: "Delete Bid?",
+      text: "This action cannot be undone.",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, delete it!",
+      confirmButtonColor: "#2563eb",
+      cancelButtonColor: "#dc2626",
+      confirmButtonText: "Delete",
     });
 
     if (!result.isConfirmed) return;
 
-    // 🔥 Instant UI update (optimistic)
     const previousBids = [...bids];
     setBids((prev) => prev.filter((bid) => bid._id !== _id));
 
     try {
       setDeletingId(_id);
 
-      const res = await fetch(
-        `http://localhost:3000/bids/${_id}`,
-        {
-          method: "DELETE",
-        }
-      );
+      const res = await fetch(`http://localhost:3000/bids/${_id}`, {
+        method: "DELETE",
+      });
 
       const data = await res.json();
 
@@ -73,122 +71,165 @@ const MyBids = () => {
       }
 
       Swal.fire({
-        title: "Deleted!",
-        text: "Your bid has been Deleted.",
         icon: "success",
+        title: "Deleted",
+        text: "Your bid has been deleted successfully.",
+        timer: 1800,
+        showConfirmButton: false,
       });
     } catch (error) {
       console.error(error);
 
-      // 🔥 rollback if fail
       setBids(previousBids);
 
       Swal.fire({
-        title: "Error!",
-        text: "Failed to delete bid.",
         icon: "error",
+        title: "Oops!",
+        text: "Failed to delete the bid.",
       });
     } finally {
       setDeletingId(null);
     }
   };
 
-  // LOADING UI
+  // Loading
   if (loading) {
     return (
-      <div className="text-center py-10">
-        Loading your bids...
-      </div>
+      <section className="min-h-[70vh] flex items-center justify-center">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
+      </section>
     );
   }
 
-  // ERROR UI
+  // Error
   if (error) {
     return (
-      <div className="text-center text-red-500 py-10">
-        {error}
-      </div>
+      <section className="max-w-7xl mx-auto px-4 py-20">
+        <div className="alert alert-error shadow-lg">
+          <span>{error}</span>
+        </div>
+      </section>
     );
   }
 
   return (
-    <div className="space-y-5">
-      <h1 className="text-2xl font-bold">
-        My Bids: {bids.length}
-      </h1>
+    <section className="py-12 lg:py-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-      <div className="overflow-x-auto">
-        <table className="table table-zebra">
-          <thead>
-            <tr>
-              <th>SL</th>
-              <th>Product</th>
-              <th>Email</th>
-              <th>Bid Price</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
+        {/* Header */}
 
-          <tbody>
-            {bids.length > 0 ? (
-              bids.map((bid, index) => (
-                <tr key={bid._id}>
-                  <td>{index + 1}</td>
+        <div className="mb-10 text-center">
 
-                  <td className="font-semibold">
-                    {bid.product}
-                  </td>
+          <h1 className="text-3xl md:text-4xl font-bold">
+            My <span className="text-primary">Bids</span>
+          </h1>
 
-                  <td>{bid.buyer_email}</td>
+          <p className="mt-3 text-base-content/70">
+            View and manage all the bids you've placed.
+          </p>
 
-                  <td className="font-bold">
-                    ${bid.bid_price}
-                  </td>
+          <div className="mt-5 inline-flex rounded-full bg-primary/10 px-5 py-2 text-sm font-medium text-primary">
+            Total Bids: {bids.length}
+          </div>
 
-                  <td>
-                    <span
-                      className={`badge ${
-                        bid.status === "pending"
-                          ? "badge-warning"
-                          : bid.status === "accepted"
-                          ? "badge-success"
-                          : "badge-error"
-                      }`}
-                    >
-                      {bid.status}
-                    </span>
-                  </td>
+        </div>
 
-                  <td>
-                    <button
-                      onClick={() =>
-                        handleDeleteBids(bid._id)
-                      }
-                      disabled={deletingId === bid._id}
-                      className="btn btn-ghost btn-xs border-2 border-red-500 text-red-500"
-                    >
-                      {deletingId === bid._id
-                        ? "Deleting..."
-                        : "Delete"}
-                    </button>
-                  </td>
+        {bids.length === 0 ? (
+          <div className="rounded-3xl border border-dashed border-base-300 py-20 text-center">
+
+            <h2 className="text-2xl font-bold">
+              No Bids Found
+            </h2>
+
+            <p className="mt-3 text-base-content/60">
+              You haven't placed any bids yet.
+            </p>
+
+          </div>
+        ) : (
+          <div className="overflow-x-auto rounded-2xl border border-base-300 bg-base-100 shadow-sm">
+
+            <table className="table">
+
+              <thead className="bg-base-200">
+
+                <tr>
+                  <th>#</th>
+                  <th>Product</th>
+                  <th>Email</th>
+                  <th>Bid Price</th>
+                  <th>Status</th>
+                  <th className="text-center">Action</th>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td
-                  colSpan="6"
-                  className="text-center py-6 text-gray-500"
-                >
-                  No bids found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+
+              </thead>
+
+              <tbody>
+
+                {bids.map((bid, index) => (
+                  <tr
+                    key={bid._id}
+                    className="hover"
+                  >
+                    <td className="font-medium">
+                      {index + 1}
+                    </td>
+
+                    <td className="font-semibold">
+                      {bid.product}
+                    </td>
+
+                    <td className="text-base-content/70">
+                      {bid.buyer_email}
+                    </td>
+
+                    <td className="font-bold text-primary">
+                      ${bid.bid_price}
+                    </td>
+
+                    <td>
+                      <span
+                        className={`badge capitalize ${
+                          bid.status === "pending"
+                            ? "badge-warning"
+                            : bid.status === "accepted"
+                            ? "badge-success"
+                            : "badge-error"
+                        }`}
+                      >
+                        {bid.status}
+                      </span>
+                    </td>
+
+                    <td className="text-center">
+                      <button
+                        onClick={() =>
+                          handleDeleteBids(bid._id)
+                        }
+                        disabled={deletingId === bid._id}
+                        className="btn btn-error btn-sm"
+                      >
+                        {deletingId === bid._id ? (
+                          <>
+                            <span className="loading loading-spinner loading-xs"></span>
+                            Deleting
+                          </>
+                        ) : (
+                          "Delete"
+                        )}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+
+              </tbody>
+
+            </table>
+
+          </div>
+        )}
       </div>
-    </div>
+    </section>
   );
 };
 
