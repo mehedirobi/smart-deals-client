@@ -5,6 +5,8 @@ import { Authcontext } from "../context/AuthContext";
 const CreateProduct = () => {
   const { user } = useContext(Authcontext);
 
+  const [submitting, setSubmitting] = useState(false);
+
   const [formData, setFormData] = useState({
     title: "",
     category: "",
@@ -38,6 +40,8 @@ const CreateProduct = () => {
     };
 
     try {
+      setSubmitting(true);
+
       const res = await fetch("http://localhost:3000/products", {
         method: "POST",
         headers: {
@@ -51,8 +55,8 @@ const CreateProduct = () => {
       if (data.insertedId) {
         Swal.fire({
           icon: "success",
-          title: "Product added successfully",
-          timer: 1500,
+          title: "Product Added Successfully",
+          timer: 1800,
           showConfirmButton: false,
         });
 
@@ -73,170 +77,319 @@ const CreateProduct = () => {
         title: "Something went wrong",
         text: error.message,
       });
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <section className="w-11/12 max-w-5xl mx-auto py-12">
-      <div className="bg-base-100 shadow-xl rounded-xl p-8 border border-base-200">
-        <h1 className="text-4xl font-bold text-center mb-8">
-          Create <span className="text-primary">Product</span>
-        </h1>
+    <section className="py-16 lg:py-20">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        <form
-          onSubmit={handleSubmit}
-          className="grid grid-cols-1 md:grid-cols-2 gap-6"
-        >
-          {/* Product Title */}
-          <div className="form-control">
-            <label className="label font-semibold">Product Title</label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              className="input input-bordered w-full"
-              placeholder="MacBook Air M2"
-              required
-            />
-          </div>
+        {/* Header */}
 
-          {/* Category */}
-          <div className="form-control">
-            <label className="label font-semibold">Category</label>
+        <div className="text-center mb-12">
 
-            <select
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              className="select select-bordered w-full"
-              required
-            >
-              <option value="">Select Category</option>
-              <option>Electronics</option>
-              <option>Vehicles</option>
-              <option>Furniture</option>
-              <option>Fashion</option>
-              <option>Gaming</option>
-              <option>Books</option>
-              <option>Sports</option>
-            </select>
-          </div>
+          <span className="inline-flex rounded-full bg-primary/10 px-4 py-1 text-sm font-semibold text-primary">
+            Seller Dashboard
+          </span>
 
-          {/* Min Price */}
-          <div className="form-control">
-            <label className="label font-semibold">Minimum Price ($)</label>
+          <h1 className="mt-5 text-4xl md:text-5xl font-bold">
+            Create
+            <span className="text-primary"> Product</span>
+          </h1>
 
-            <input
-              type="number"
-              name="price_min"
-              value={formData.price_min}
-              onChange={handleChange}
-              className="input input-bordered"
-              required
-            />
-          </div>
+          <p className="mt-4 max-w-2xl mx-auto text-base-content/70">
+            List your product on SmartDeals. Complete the details below
+            to attract more buyers and receive competitive bids.
+          </p>
 
-          {/* Max Price */}
-          <div className="form-control">
-            <label className="label font-semibold">Maximum Price ($)</label>
+        </div>
 
-            <input
-              type="number"
-              name="price_max"
-              value={formData.price_max}
-              onChange={handleChange}
-              className="input input-bordered"
-              required
-            />
-          </div>
+        <div className="rounded-3xl border border-base-300 bg-base-100 shadow-lg p-6 md:p-10">
 
-          {/* Image */}
-          <div className="form-control">
-            <label className="label font-semibold">Image URL</label>
+          <form
+            onSubmit={handleSubmit}
+            className="grid gap-6 md:grid-cols-2"
+          >
 
-            <input
-              type="url"
-              name="image"
-              value={formData.image}
-              onChange={handleChange}
-              className="input input-bordered"
-              required
-            />
-          </div>
+            {/* Product Title */}
 
-          {/* Location */}
-          <div className="form-control">
-            <label className="label font-semibold">Location</label>
+            <div className="form-control">
 
-            <input
-              type="text"
-              name="location"
-              value={formData.location}
-              onChange={handleChange}
-              className="input input-bordered"
-              placeholder="Dhaka"
-              required
-            />
-          </div>
+              <label className="label">
+                <span className="label-text font-semibold">
+                  Product Title
+                  <span className="text-error"> *</span>
+                </span>
+              </label>
 
-          {/* Condition */}
-          <div className="form-control">
-            <label className="label font-semibold">Condition</label>
+              <input
+                type="text"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                placeholder="e.g. MacBook Air M2 (2024)"
+                className="input input-bordered w-full focus:input-primary"
+                required
+              />
 
-            <select
-              name="condition"
-              value={formData.condition}
-              onChange={handleChange}
-              className="select select-bordered"
-            >
-              <option value="new">New</option>
-              <option value="used">Used</option>
-            </select>
-          </div>
+            </div>
 
-          {/* Seller Name */}
-          <div className="form-control">
-            <label className="label font-semibold">Seller Name</label>
+            {/* Category */}
 
-            <input
-              type="text"
-              value={user?.displayName || ""}
-              className="input input-bordered"
-              readOnly
-            />
-          </div>
+            <div className="form-control">
 
-          {/* Seller Email */}
-          <div className="form-control">
-            <label className="label font-semibold">Seller Email</label>
+              <label className="label">
+                <span className="label-text font-semibold">
+                  Category
+                  <span className="text-error"> *</span>
+                </span>
+              </label>
 
-            <input
-              type="email"
-              value={user?.email || ""}
-              className="input input-bordered"
-              readOnly
-            />
-          </div>
+              <select
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                className="select select-bordered w-full"
+                required
+              >
+                <option value="">Select Category</option>
+                <option>Electronics</option>
+                <option>Vehicles</option>
+                <option>Furniture</option>
+                <option>Fashion</option>
+                <option>Gaming</option>
+                <option>Books</option>
+                <option>Sports</option>
+              </select>
 
-          {/* Description */}
-          <div className="form-control md:col-span-2">
-            <label className="label font-semibold">Description</label>
+            </div>
 
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              className="textarea textarea-bordered h-32"
-              placeholder="Write a short description..."
-              required
-            />
-          </div>
+            {/* Minimum Price */}
 
-          <button className="btn btn-primary md:col-span-2 mt-4">
-            Add Product
-          </button>
-        </form>
+            <div className="form-control">
+
+              <label className="label">
+                <span className="label-text font-semibold">
+                  Minimum Price ($)
+                </span>
+              </label>
+
+              <input
+                type="number"
+                min="0"
+                name="price_min"
+                value={formData.price_min}
+                onChange={handleChange}
+                className="input input-bordered w-full"
+                placeholder="Minimum Price"
+                required
+              />
+
+            </div>
+
+            {/* Maximum Price */}
+
+            <div className="form-control">
+
+              <label className="label">
+                <span className="label-text font-semibold">
+                  Maximum Price ($)
+                </span>
+              </label>
+
+              <input
+                type="number"
+                min="0"
+                name="price_max"
+                value={formData.price_max}
+                onChange={handleChange}
+                className="input input-bordered w-full"
+                placeholder="Maximum Price"
+                required
+              />
+
+            </div>
+
+            {/* Image */}
+
+            <div className="form-control">
+
+              <label className="label">
+                <span className="label-text font-semibold">
+                  Image URL
+                </span>
+              </label>
+
+              <input
+                type="url"
+                name="image"
+                value={formData.image}
+                onChange={handleChange}
+                placeholder="https://example.com/image.jpg"
+                className="input input-bordered w-full"
+                required
+              />
+
+            </div>
+
+            {/* Location */}
+
+            <div className="form-control">
+
+              <label className="label">
+                <span className="label-text font-semibold">
+                  Location
+                </span>
+              </label>
+
+              <input
+                type="text"
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                placeholder="Dhaka"
+                className="input input-bordered w-full"
+                required
+              />
+
+            </div>
+                        {/* Condition */}
+
+            <div className="form-control">
+
+              <label className="label">
+                <span className="label-text font-semibold">
+                  Product Condition
+                </span>
+              </label>
+
+              <select
+                name="condition"
+                value={formData.condition}
+                onChange={handleChange}
+                className="select select-bordered w-full"
+              >
+                <option value="new">New</option>
+                <option value="used">Used</option>
+              </select>
+
+            </div>
+
+            {/* Seller Name */}
+
+            <div className="form-control">
+
+              <label className="label">
+                <span className="label-text font-semibold">
+                  Seller Name
+                </span>
+              </label>
+
+              <input
+                type="text"
+                value={user?.displayName || ""}
+                readOnly
+                className="input input-bordered bg-base-200 cursor-not-allowed w-full"
+              />
+
+            </div>
+
+            {/* Seller Email */}
+
+            <div className="form-control md:col-span-2">
+
+              <label className="label">
+                <span className="label-text font-semibold">
+                  Seller Email
+                </span>
+              </label>
+
+              <input
+                type="email"
+                value={user?.email || ""}
+                readOnly
+                className="input input-bordered bg-base-200 cursor-not-allowed w-full"
+              />
+
+            </div>
+
+            {/* Description */}
+
+            <div className="form-control md:col-span-2">
+
+              <label className="label">
+                <span className="label-text font-semibold">
+                  Description
+                  <span className="text-error"> *</span>
+                </span>
+              </label>
+
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                className="textarea textarea-bordered h-36 w-full"
+                placeholder="Describe your product, condition, included accessories, warranty and other important details..."
+                required
+              />
+
+            </div>
+
+            {/* Image Preview */}
+
+            {formData.image && (
+              <div className="md:col-span-2">
+
+                <label className="label">
+                  <span className="label-text font-semibold">
+                    Image Preview
+                  </span>
+                </label>
+
+                <div className="overflow-hidden rounded-2xl border border-base-300 bg-base-100">
+
+                  <img
+                    src={formData.image}
+                    alt="Preview"
+                    className="h-72 w-full object-cover"
+                    onError={(e) => {
+                      e.target.src =
+                        "https://placehold.co/1200x600?text=Image+Preview";
+                    }}
+                  />
+
+                </div>
+
+              </div>
+            )}
+
+            {/* Submit Button */}
+
+            <div className="md:col-span-2 mt-4">
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="btn btn-primary btn-lg w-full"
+              >
+                {submitting ? (
+                  <>
+                    <span className="loading loading-spinner loading-sm"></span>
+                    Adding Product...
+                  </>
+                ) : (
+                  "Add Product"
+                )}
+              </button>
+
+            </div>
+
+          </form>
+
+        </div>
+
       </div>
     </section>
   );
