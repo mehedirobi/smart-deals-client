@@ -10,6 +10,8 @@ const MyBids = () => {
   const [error, setError] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
 
+  // console.log('token', user.accessToken)
+
   // FETCH BIDS
   useEffect(() => {
     const fetchMyBids = async () => {
@@ -19,7 +21,11 @@ const MyBids = () => {
         setLoading(true);
 
         const res = await fetch(
-          `http://localhost:3000/bids?email=${user.email}`
+          `http://localhost:3000/bids?email=${user.email}`,{
+            headers:{
+              authorization: `Bearer ${user.accessToken}`
+            }
+          }
         );
 
         if (!res.ok) {

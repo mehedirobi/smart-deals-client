@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router";
 
 const Banner = () => {
   return (
@@ -24,13 +25,13 @@ const Banner = () => {
           </p>
 
           <div className="flex flex-col md:flex-row justify-center gap-4">
-            <button className="btn btn-primary">
+            <Link to="allproducts" className="btn btn-primary">
               Browse Products
-            </button>
+            </Link>
 
-            <button className="btn btn-outline">
+            <Link to='createproduct' className="btn btn-outline">
               Add Product
-            </button>
+            </Link>
           </div>
 
           <div className="grid grid-cols-3 gap-6 mt-12">

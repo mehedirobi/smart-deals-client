@@ -80,7 +80,7 @@ const router = createBrowserRouter([
 
           return res.json();
         },
-        element: <ProducDetails />,
+        element: <PrivateRoute><ProducDetails /></PrivateRoute>,
       },
     ],
   },
