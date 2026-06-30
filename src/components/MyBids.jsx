@@ -11,6 +11,7 @@ const MyBids = () => {
   const [deletingId, setDeletingId] = useState(null);
 
   // console.log('token', user.accessToken)
+  
 
   // FETCH BIDS
  useEffect(() => {
@@ -21,7 +22,12 @@ const MyBids = () => {
       setLoading(true);
       setError(null);
 
-      const token = await user.getIdToken();
+      const token = await user.getIdToken(true);
+
+      // 👇 এগুলো add করো
+      console.log("User:", user);
+      console.log("Email:", user.email);
+      console.log("Token:", token);
 
       const res = await fetch(
         `http://localhost:3000/bids?email=${user.email}`,
