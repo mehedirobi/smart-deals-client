@@ -13,90 +13,100 @@ const MyBids = () => {
   // console.log('token', user.accessToken)
 
   // FETCH BIDS
-  useEffect(() => {
-    const fetchMyBids = async () => {
-      try {
-        if (!user?.email) return;
-
-        setLoading(true);
-
-        const res = await fetch(
-          `http://localhost:3000/bids?email=${user.email}`,{
-            headers:{
-              authorization: `Bearer ${user.accessToken}`
-            }
-          }
-        );
-
-        if (!res.ok) {
-          throw new Error("Failed to fetch bids");
-        }
-
-        const data = await res.json();
-
-        setBids(data || []);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load your bids.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMyBids();
-  }, [user?.email]);
-
-  // DELETE BID
-  const handleDeleteBids = async (_id) => {
-    const result = await Swal.fire({
-      title: "Delete Bid?",
-      text: "This action cannot be undone.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#2563eb",
-      cancelButtonColor: "#dc2626",
-      confirmButtonText: "Delete",
-    });
-
-    if (!result.isConfirmed) return;
-
-    const previousBids = [...bids];
-    setBids((prev) => prev.filter((bid) => bid._id !== _id));
+ useEffect(() => {
+  const fetchMyBids = async () => {
+    if (!user?.email) return;
 
     try {
-      setDeletingId(_id);
+      setLoading(true);
+      setError(null);
 
-      const res = await fetch(`http://localhost:3000/bids/${_id}`, {
-        method: "DELETE",
-      });
+      const token = await user.getIdToken();
+
+      const res = await fetch(
+        `http://localhost:3000/bids?email=${user.email}`,
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       const data = await res.json();
 
-      if (!data.deletedCount) {
-        throw new Error("Delete failed");
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to fetch bids");
       }
 
-      Swal.fire({
-        icon: "success",
-        title: "Deleted",
-        text: "Your bid has been deleted successfully.",
-        timer: 1800,
-        showConfirmButton: false,
-      });
-    } catch (error) {
-      console.error(error);
-
-      setBids(previousBids);
-
-      Swal.fire({
-        icon: "error",
-        title: "Oops!",
-        text: "Failed to delete the bid.",
-      });
+      setBids(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "Failed to load your bids.");
+      setBids([]);
     } finally {
-      setDeletingId(null);
+      setLoading(false);
     }
   };
+
+  fetchMyBids();
+}, [user]);
+
+  // DELETE BID
+  const handleDeleteBids = async (_id) => {
+  const result = await Swal.fire({
+    title: "Delete Bid?",
+    text: "This action cannot be undone.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#2563eb",
+    cancelButtonColor: "#dc2626",
+    confirmButtonText: "Delete",
+  });
+
+  if (!result.isConfirmed) return;
+
+  const previousBids = [...bids];
+  setBids((prev) => prev.filter((bid) => bid._id !== _id));
+
+  try {
+    setDeletingId(_id);
+
+    const token = await user.getIdToken();
+
+    const res = await fetch(`http://localhost:3000/bids/${_id}`, {
+      method: "DELETE",
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.deletedCount) {
+      throw new Error(data.message || "Delete failed");
+    }
+
+    Swal.fire({
+      icon: "success",
+      title: "Deleted",
+      text: "Your bid has been deleted successfully.",
+      timer: 1800,
+      showConfirmButton: false,
+    });
+  } catch (error) {
+    console.error(error);
+
+    setBids(previousBids);
+
+    Swal.fire({
+      icon: "error",
+      title: "Oops!",
+      text: error.message || "Failed to delete the bid.",
+    });
+  } finally {
+    setDeletingId(null);
+  }
+};
 
   // Loading
   if (loading) {

@@ -18,22 +18,41 @@ const ProducDetails = () => {
   // Fetch bids
   useEffect(() => {
     const fetchBids = async () => {
+      if (!user || !productId) return;
+
       try {
+        const token = await user.getIdToken();
+
         const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/products/bids/${productId}`
+          `${import.meta.env.VITE_API_URL}/products/bids/${productId}`,
+          {
+            headers: {
+              authorization: `Bearer ${token}`,
+            },
+          }
         );
+
         const data = await res.json();
-        setBids(data || []);
+
+        if (res.ok && Array.isArray(data)) {
+          setBids(data);
+        } else {
+          console.error("Failed to fetch bids:", data);
+          setBids([]);
+        }
       } catch (error) {
         console.error("Failed to fetch bids:", error);
+        setBids([]);
       }
     };
 
-    if (productId) fetchBids();
-  }, [productId]);
+    fetchBids();
+  }, [productId, user]);
 
-  // Sort bids (highest first)
+  // Sort bids
   const sortedBids = useMemo(() => {
+    if (!Array.isArray(bids)) return [];
+
     return [...bids].sort(
       (a, b) => Number(b.bid_price) - Number(a.bid_price)
     );
@@ -56,24 +75,25 @@ const ProducDetails = () => {
     try {
       setIsSubmitting(true);
 
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/bids`,
-        {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(newBid),
-        }
-      );
+      const token = await user.getIdToken();
+
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/bids`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(newBid),
+      });
 
       const data = await res.json();
 
-      if (data.insertedId) {
-        setBids((prev) => [
-          ...prev,
-          { ...newBid, _id: data.insertedId },
-        ]);
+      if (res.ok && data.insertedId) {
+        setBids((prev) => [...prev, { ...newBid, _id: data.insertedId }]);
 
         bidModalRef.current?.close();
+
+        form.reset();
 
         Swal.fire({
           icon: "success",
@@ -81,8 +101,15 @@ const ProducDetails = () => {
           timer: 1500,
           showConfirmButton: false,
         });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: data.message || "Failed to place bid",
+        });
       }
     } catch (error) {
+      console.error(error);
+
       Swal.fire({
         icon: "error",
         title: "Failed to place bid",
@@ -94,53 +121,46 @@ const ProducDetails = () => {
 
   return (
     <section className="max-w-6xl mx-auto px-4 py-12 space-y-10">
-
-      {/* Header */}
       <div className="text-center space-y-2">
         <h1 className="text-3xl md:text-4xl font-bold">
           {title || "Product Details"}
         </h1>
+
         <p className="text-base-content/60">
           Place your bid and win this product
         </p>
       </div>
 
-      {/* 🔥 BEAUTIFUL CTA BUTTON SECTION */}
       <div className="flex justify-center">
         <div className="bg-base-200 border border-base-300 rounded-2xl p-6 shadow-md flex flex-col items-center gap-3 w-full max-w-md">
-
           <h2 className="text-lg font-semibold">
             Ready to make an offer?
           </h2>
 
           <p className="text-sm text-base-content/60 text-center">
-            Click below to open bidding form and submit your best price
+            Click below to open bidding form and submit your best price.
           </p>
 
           <button
             onClick={openModal}
-            className="btn btn-primary btn-wide mt-2 hover:scale-105 transition-transform"
+            className="btn btn-primary btn-wide mt-2"
           >
             💰 Place Your Bid
           </button>
-
         </div>
       </div>
 
-      {/* Modal */}
       <dialog ref={bidModalRef} className="modal">
         <div className="modal-box">
-
           <h3 className="text-xl font-bold">
             Submit Your Offer
           </h3>
 
           <p className="text-sm text-base-content/60 mt-1">
-            Higher bids increase your chance to win
+            Higher bids increase your chance to win.
           </p>
 
           <form onSubmit={handleBidSubmit} className="mt-5 space-y-3">
-
             <input
               name="name"
               defaultValue={user?.displayName}
@@ -170,21 +190,19 @@ const ProducDetails = () => {
             >
               {isSubmitting ? "Submitting..." : "Submit Bid"}
             </button>
-
           </form>
 
           <div className="modal-action">
             <form method="dialog">
-              <button className="btn btn-sm">Close</button>
+              <button className="btn btn-sm">
+                Close
+              </button>
             </form>
           </div>
-
         </div>
       </dialog>
 
-      {/* Bids Section */}
       <div>
-
         <h2 className="text-2xl font-bold mb-4">
           Current Bids ({sortedBids.length})
         </h2>
@@ -195,9 +213,7 @@ const ProducDetails = () => {
           </div>
         ) : (
           <div className="overflow-x-auto rounded-xl border">
-
             <table className="table">
-
               <thead>
                 <tr>
                   <th>#</th>
@@ -225,14 +241,10 @@ const ProducDetails = () => {
                   </tr>
                 ))}
               </tbody>
-
             </table>
-
           </div>
         )}
-
       </div>
-
     </section>
   );
 };
