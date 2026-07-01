@@ -11,6 +11,7 @@ const MyBids = () => {
   const [deletingId, setDeletingId] = useState(null);
 
   // console.log('token', user.accessToken)
+  // Check if user is authenticated
   
 
   // FETCH BIDS
@@ -24,7 +25,7 @@ const MyBids = () => {
 
       const token = await user.getIdToken(true);
 
-      // 👇 এগুলো add করো
+      
       console.log("User:", user);
       console.log("Email:", user.email);
       console.log("Token:", token);
